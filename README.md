@@ -54,3 +54,9 @@ Production publication uses the Sites skill and its build/package/deploy workflo
 ## Limits
 
 Maximum 1,000 people and 12 MB per save request. Portraits are resized in the browser; original full-resolution files are not retained. One current partner is supported, without marriage history or adoption labels. Failed/stale saves never silently overwrite another device. Unreferenced portrait objects are retained; there is no automatic photo garbage collection or revision-history UI. JSON export provides a user-controlled backup.
+
+## Design skill and interface
+
+The Apple Design Skill from https://github.com/dickwu/apple-design-skill is installed in `.design-rules/`, with its original SKILL.md, complete reference collection, and refresh script. Root `AGENTS.md` activates its guidance for design work. These are upstream materials, not an official Apple integration; Apple guideline text retains its source attribution. Installation is project-scoped and follows the manual Codex rules-file approach; no global agent settings are changed.
+
+The redesigned frontend includes an original botanical house crest, forest/gold and parchment themes, mobile navigation, progressive person forms, quick-add relatives, branch focus, a family directory, a life-event chronicle, keyboard canvas controls, and up to 20 undo steps per session. In the empty archive, fictional sample records are clearly labeled and must be replaced explicitly before adding real people. Undo history clears on reload and when another device changes the tree. `tests/create-ui-fixture.mjs` creates an isolated static browser QA copy with synthetic data; it is never used by production routes or builds.
