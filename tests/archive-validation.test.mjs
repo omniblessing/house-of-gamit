@@ -1,0 +1,11 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const html=fs.readFileSync('web/index.html','utf8');
+const source=html.slice(html.indexOf('function validateArchive('),html.indexOf('const person=id=>'));
+const validate=new Function(source+';return validateArchive')();
+const person=(id,extra={})=>({id,name:'Test '+id,status:'living',parents:[],spouses:[],...extra});
+const archive=people=>({title:'Test family',motto:'Test',people});
+test('valid archive preserves biographies and normalizes optional fields',()=>{const result=validate(archive([person('a',{bio:'A memory'})]));assert.equal(result.people[0].bio,'A memory');assert.equal(result.people[0].house,'')});
+test('invalid records, dates, portraits and missing links cannot replace the archive',()=>{for(const people of [[null],[person('a'),person('a')],[person('a',{born:'2025-02-30'})],[person('a',{photo:'https://tracker.invalid/image.png'})],[person('a',{parents:['missing']})],[person('a',{spouses:['b']}),person('b')]])assert.throws(()=>validate(archive(people)))});
+test('ancestor loops are rejected and valid partner connections retained',()=>{assert.throws(()=>validate(archive([person('a',{parents:['b']}),person('b',{parents:['a']})])));assert.equal(validate(archive([person('a',{spouses:['b']}),person('b',{spouses:['a']})])).people.length,2)});
