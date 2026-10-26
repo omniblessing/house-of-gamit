@@ -5,6 +5,7 @@ on:
     paths:
       - 'web/index.html'
       - 'scripts/build-pages.mjs'
+      - 'cloudflare/pages-adapter.js'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 permissions:

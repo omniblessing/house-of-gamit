@@ -1,0 +1,9 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import vm from 'node:vm';
+const script=fs.readFileSync('cloudflare/pages-adapter.js','utf8');
+function fixture(remote,previous=false){const storage=new Map(previous?[['gamit-shared-connected','1']]:[]);let localCalls=0;const store={getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)};const window={fetch:async()=>{localCalls++;return Response.json({local:true})}};const context=vm.createContext({window,__nativeFamilyFetch:remote,sessionStorage:store,localStorage:store,document:{addEventListener(){}},Response,Headers,AbortController,setTimeout,clearTimeout,Error});vm.runInContext(script,context);return {window,localCalls:()=>localCalls}}
+test('unconfigured Worker keeps explicit local edition available',async()=>{const f=fixture(async()=>new Response('Hello World!'));const r=await f.window.fetch('/api/family');assert.equal((await r.json()).local,true);assert.equal(f.window.FAMILY_SHARED_MODE(),false)});
+test('configured service routes shared reads and writes; outages do not save locally',async()=>{let calls=0;const f=fixture(async()=>{calls++;if(calls>=3)throw Error('Offline');return Response.json({service:'house-of-gamit-v1',data:null,revision:0,canEdit:false})});assert.equal((await(await f.window.fetch('/api/family')).json()).service,'house-of-gamit-v1');assert.equal(f.window.FAMILY_SHARED_MODE(),true);await assert.rejects(()=>f.window.fetch('/api/family',{method:'PUT'}),/Offline/);assert.equal(f.localCalls(),0)});
+test('previously connected browser fails closed if startup cloud probe fails',async()=>{const f=fixture(async()=>{throw Error('Offline')},true);await assert.rejects(()=>f.window.fetch('/api/family'),/Shared storage could not be reached/);assert.equal(f.localCalls(),0)});
